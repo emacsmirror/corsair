@@ -13,13 +13,13 @@
 ;; and file expansion within Emacs projects.
 
 ;; Suggested Key bindings:
-;; (global-set-key (kbd "C-c g c") #'corsair-open-chat-buffer)                    ;; Open chat buffer
-;; (global-set-key (kbd "C-c g a c") #'corsair-accumulate-file-path-and-contents) ;; Accumulate file path and contents
-;; (global-set-key (kbd "C-c g a n") #'corsair-accumulate-file-name)              ;; Accumulate file name
-;; (global-set-key (kbd "C-c g a v") #'corsair-accumulate-file-path)              ;; Accumulate file path
-;; (global-set-key (kbd "C-c g a w") #'corsair-accumulate-selected-text)          ;; Accumulate selected text
-;; (global-set-key (kbd "C-c g a D") #'corsair-drop-accumulated-buffer)           ;; Drop chat buffer
-;; (global-set-key (kbd "C-c g f") #'corsair-insert-file-or-folder-contents)      ;; Insert file or folder contents
+;; (global-set-key (kbd "C-c a o") #'corsair-open-chat-buffer)                    ;; Open chat buffer
+;; (global-set-key (kbd "C-c a c") #'corsair-accumulate-file-path-and-contents)   ;; Accumulate file path and contents
+;; (global-set-key (kbd "C-c a n") #'corsair-accumulate-file-name)                ;; Accumulate file name
+;; (global-set-key (kbd "C-c a v") #'corsair-accumulate-file-path)                ;; Accumulate file path
+;; (global-set-key (kbd "C-c a w") #'corsair-accumulate-selected-text)            ;; Accumulate selected text
+;; (global-set-key (kbd "C-c a D") #'corsair-drop-accumulated-buffer)             ;; Drop chat buffer
+;; (global-set-key (kbd "C-c a f") #'corsair-insert-file-or-folder-contents)      ;; Insert file or folder contents
 
 ;;; Code:
 
@@ -47,7 +47,8 @@
       (unless (derived-mode-p 'org-mode)
         (org-mode))
       (gptel-mode))
-    (switch-to-buffer buffer)))
+    (switch-to-buffer buffer)
+    (message "Corsair: chat buffer open")))
 
 ;;;###autoload
 (defun corsair-accumulate-file-path-and-contents ()
@@ -60,7 +61,8 @@
            (data (concat "\n" path "\n" contents "\n")))
       (with-current-buffer (get-buffer-create corsair-chat-buffer-name)
         (goto-char (point-max))
-        (insert data))))
+        (insert data))
+      (message "Corsair: accumulated contents of %s" (buffer-name))))
    ((user-error "No file associated with this buffer"))))
 
 ;;;###autoload
@@ -72,7 +74,8 @@
     (let ((name (file-name-nondirectory buffer-file-name)))
       (with-current-buffer (get-buffer-create corsair-chat-buffer-name)
         (goto-char (point-max))
-        (insert "\n" name "\n"))))
+        (insert "\n" name "\n"))
+      (message "Corsair: accumulated name of %s" (buffer-name))))
    ((user-error "No file associated with this buffer"))))
 
 ;;;###autoload
@@ -84,7 +87,8 @@
     (let ((path buffer-file-name))
       (with-current-buffer (get-buffer-create corsair-chat-buffer-name)
         (goto-char (point-max))
-        (insert "\n" path "\n"))))
+        (insert "\n" path "\n"))
+      (message "Corsair: accumulated path of %s" (buffer-name))))
    ((user-error "No file associated with this buffer"))))
 
 ;;;###autoload
@@ -97,7 +101,8 @@
       (with-current-buffer (get-buffer-create corsair-chat-buffer-name)
         (goto-char (point-max))
         (insert "\n" text "\n"))
-      (deactivate-mark)))
+      (deactivate-mark)
+      (message "Corsair: accumulated selected text")))
    ((user-error "No region selected"))))
 
 ;;;###autoload
@@ -106,9 +111,11 @@
   (interactive)
   (let ((buf (get-buffer corsair-chat-buffer-name)))
     (if buf
-        (with-current-buffer buf
-          (erase-buffer))
-      (message "GPTel chat buffer does not exist."))))
+        (progn
+          (with-current-buffer buf
+            (erase-buffer))
+          (message "Corsair: chat buffer cleared"))
+      (message "Corsair: chat buffer does not exist"))))
 
 (defun corsair-project-paths ()
   "Return a list of files in the current project."
@@ -145,7 +152,7 @@
                                 (buffer-string)))))
              (t
               (user-error "Selected path is neither a file nor a directory"))))
-          (message "Inserted contents of %s" path))
+          (message "Corsair: inserted contents of %s" path))
       (user-error "No project found"))))
 
 (provide 'corsair)
